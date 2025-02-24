@@ -11,6 +11,7 @@ import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import PedroPathing.constants.FConstants;
@@ -18,6 +19,7 @@ import PedroPathing.constants.LConstants;
 
 import Robot.Robot;
 
+@Disabled
 @Autonomous(name = "Specimen", group = "Autonomous")
 public class SpecimenAuto extends OpMode {
 
@@ -25,8 +27,9 @@ public class SpecimenAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
-    private int pathState = 0;
-    private int specimenScored = 0;
+
+    private int pathState;
+    private int specimenScored;
 
     private final double SPECIMEN_OFFSET = 2;
 
@@ -45,45 +48,94 @@ public class SpecimenAuto extends OpMode {
         scorePreload = new Path(new BezierLine(new Point(startPose), new Point(getScorePose())));
         scorePreload.setConstantHeadingInterpolation(Math.toRadians(0));
 
-//        collectSamples = new PathBuilder()
-//                .addPath(new BezierCurve(new Point(32.000, 72.000, Point.CARTESIAN), new Point(24.000, 48.000, Point.CARTESIAN), new Point(48.000, 36.000, Point.CARTESIAN)))
-//                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(120))
-//                .addPath(new BezierLine(new Point(48.000, 36.000, Point.CARTESIAN), new Point(30.000, 36.000, Point.CARTESIAN)))
-//                .setLinearHeadingInterpolation(Math.toRadians(120), Math.toRadians(60))
-//                .addPath(new BezierLine(new Point(30.000, 36.000, Point.CARTESIAN), new Point(42.000, 27.000, Point.CARTESIAN)))
-//                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(120))
-//                .addPath(new BezierLine(new Point(42.000, 27.000, Point.CARTESIAN), new Point(30.000, 27.000, Point.CARTESIAN)))
-//                .setLinearHeadingInterpolation(Math.toRadians(120), Math.toRadians(60))
-//                .addPath(new BezierLine(new Point(30.000, 27.000, Point.CARTESIAN), new Point(42.000, 18.000, Point.CARTESIAN)))
-//                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(120))
-//                .addPath(new BezierLine(new Point(42.000, 18.000, Point.CARTESIAN), new Point(30.000, 18.000, Point.CARTESIAN)))
-//                .setLinearHeadingInterpolation(Math.toRadians(120), Math.toRadians(60))
-//                .addPath(new BezierCurve(new Point(30.000, 18.000, Point.CARTESIAN), new Point(30.000, 32.000, Point.CARTESIAN), new Point(30.000, 32.000, Point.CARTESIAN), new Point(30.000, 32.000, Point.CARTESIAN), new Point(collectPose)))
-//                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(0))
-//                .setReversed(true)
-//                .build();
-
-        collectSamples = new PathChain(
-                new Path(new BezierCurve(new Point(32.000, 72.000, Point.CARTESIAN), new Point(24.000, 24.000, Point.CARTESIAN), new Point(84.000, 24.000, Point.CARTESIAN), new Point(60.000, 24.000, Point.CARTESIAN))),
-                new Path(new BezierLine(new Point(60.000, 24.000, Point.CARTESIAN), new Point(20.000, 24.000, Point.CARTESIAN))),
-                new Path(new BezierCurve(new Point(20.000, 24.000, Point.CARTESIAN), new Point(60.000, 36.000, Point.CARTESIAN), new Point(60.000, 12.000, Point.CARTESIAN))),
-                new Path(new BezierLine(new Point(60.000, 12.000, Point.CARTESIAN), new Point(20.000, 12.000, Point.CARTESIAN))),
-                new Path(new BezierCurve(new Point(20.000, 12.000, Point.CARTESIAN), new Point(60.158, 24.000, Point.CARTESIAN), new Point(60.000, 6.000, Point.CARTESIAN))),
-                new Path(new BezierLine(new Point(60.000, 6.000, Point.CARTESIAN), new Point(20.000, 6.000, Point.CARTESIAN))),
-                new Path(new BezierCurve(new Point(20.000, 6.000, Point.CARTESIAN), new Point(36.000, 36.000, Point.CARTESIAN), new Point(6.000, 32.000, Point.CARTESIAN)))
-        );
+        collectSamples = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(32.000, 72.000, Point.CARTESIAN), new Point(24.000, 48.000, Point.CARTESIAN), new Point(42.000, 40.000, Point.CARTESIAN)))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(140))
+                .addPath(new BezierLine(new Point(42.000, 40.000, Point.CARTESIAN), new Point(30.000, 40.000, Point.CARTESIAN)))
+                .setLinearHeadingInterpolation(Math.toRadians(140), Math.toRadians(60))
+                .addPath(new BezierLine(new Point(30.000, 40.000, Point.CARTESIAN), new Point(42.000, 30.000, Point.CARTESIAN)))
+                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(140))
+                .addPath(new BezierLine(new Point(42.000, 30.000, Point.CARTESIAN), new Point(30.000, 30.000, Point.CARTESIAN)))
+                .setLinearHeadingInterpolation(Math.toRadians(140), Math.toRadians(60))
+                .addPath(new BezierLine(new Point(30.000, 30.000, Point.CARTESIAN), new Point(42.000, 22.000, Point.CARTESIAN)))
+                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(140))
+                .addPath(new BezierLine(new Point(42.000, 22.000, Point.CARTESIAN), new Point(30.000, 22.000, Point.CARTESIAN)))
+                .setLinearHeadingInterpolation(Math.toRadians(140), Math.toRadians(60))
+                .addPath(new BezierCurve(new Point(30.000, 22.000, Point.CARTESIAN), new Point(30.000, 32.000, Point.CARTESIAN), new Point(collectPose)))
+                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(0))
+                .build();
 
         scoreSpecimens = new Path(new BezierLine(new Point(collectPose), new Point(getScorePose())));
         scoreSpecimens.setConstantHeadingInterpolation(Math.toRadians(0));
 
-        park = new Path(new BezierLine(new Point(getScorePose()), new Point(parkPose)));
+        park = new Path(new BezierLine(new Point(follower.getPose()), new Point(parkPose)));
         park.setConstantHeadingInterpolation(Math.toRadians(0));
+    }
+
+    public void setPathState(int State) {
+        pathState = State;
+        pathTimer.resetTimer();
+    }
+
+    private void autonomousPathUpdate() {
+        switch (pathState) {
+            case 0: // Score Preloaded Specimen
+                if (!follower.isBusy()) {
+                    follower.followPath(scorePreload);
+                    setPathState(1);
+                }
+                break;
+
+            case 1: // Collect Samples
+                if (!follower.isBusy()) {
+                    follower.followPath(collectSamples);
+                    setPathState(3);
+                }
+                break;
+
+            case 2: // Score Specimen
+                if (!follower.isBusy()) {
+                    follower.followPath(scoreSpecimens);
+                }
+
+                if (specimenScored < 3) {
+                    if (!follower.isBusy()) {
+                        setPathState(1);
+                        specimenScored++;
+                    }
+                } else {
+                    setPathState(3);
+                }
+                break;
+
+            case 3: // Park
+                if (!follower.isBusy()) {
+                    follower.followPath(park);
+                    setPathState(-1);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void loop() {
+        follower.update();
+        autonomousPathUpdate();
+
+        telemetry.addData("Path State", pathState);
+        telemetry.addData("Specimen Scored", specimenScored);
+        telemetry.addData("X Pos", follower.getPose().getX());
+        telemetry.addData("Y Pos", follower.getPose().getY());
+        telemetry.addData("Heading", follower.getPose().getHeading());
+        telemetry.update();
     }
 
     @Override
     public void init() {
-        robot.init(hardwareMap);
         pathTimer = new Timer();
+        opmodeTimer = new Timer();
+        opmodeTimer.resetTimer();
+
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
@@ -91,61 +143,16 @@ public class SpecimenAuto extends OpMode {
     }
 
     @Override
-    public void loop() {
-        follower.update();
-        robot.scoring.intakePivot.setPosition(0.0);
-        autonomousPathUpdate();
-
-        telemetry.addData("Path State", pathState);
-        telemetry.addData("Specimen Scored", specimenScored);
-        telemetry.addData("Current Position", follower.getPose().toString());
-        telemetry.update();
+    public void init_loop() {
     }
 
-    private void autonomousPathUpdate() {
-        switch (pathState) {
-            case 0: // Score Preloaded Specimen
-                buildPaths();
-                follower.followPath(scorePreload, true);
-                robot.scoring.sweeper.setPosition(0.0);
-                if (!follower.isBusy()) {
-                    pathState++;
-                }
-                break;
+    @Override
+    public void start() {
+        opmodeTimer.resetTimer();
+        setPathState(0);
+    }
 
-            case 1: // Collect Samples
-                buildPaths();
-                follower.followPath(collectSamples, true);
-                robot.scoring.sweeper.setPosition(0.75);
-                if (!follower.isBusy()) {
-                    pathState++;
-                }
-                break;
-
-            case 2: // Score Specimen
-                buildPaths();
-                follower.followPath(scoreSpecimens, true);
-                robot.scoring.sweeper.setPosition(0.0);
-
-                specimenScored++;
-                if (specimenScored < 3) {
-                    if (!follower.isBusy()) {
-                        pathState = 1;
-                    }
-                } else {
-                    if (!follower.isBusy()) {
-                        pathState = 3;
-                    }
-                }
-                break;
-
-            case 3: // Park
-                buildPaths();
-                follower.followPath(park, true);
-                if (!follower.isBusy()) {
-                    pathState = -1;
-                }
-                break;
-        }
+    @Override
+    public void stop() {
     }
 }

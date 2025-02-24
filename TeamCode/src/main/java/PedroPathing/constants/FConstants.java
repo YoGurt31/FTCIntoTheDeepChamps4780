@@ -20,11 +20,11 @@ public class FConstants {
 
         FollowerConstants.mass = (23 /*lbs*/ / 2.205); // Robot Weight (KG)
 
-        FollowerConstants.xMovement = 79.85136236714673;
-        FollowerConstants.yMovement = 66.00986061258416;
+        FollowerConstants.xMovement = 78;
+        FollowerConstants.yMovement = 66;
 
-        FollowerConstants.forwardZeroPowerAcceleration = -41.073442112882994;
-        FollowerConstants.lateralZeroPowerAcceleration = -68.09205685672501;
+        FollowerConstants.forwardZeroPowerAcceleration = -42;
+        FollowerConstants.lateralZeroPowerAcceleration = -68;
 
         FollowerConstants.translationalPIDFCoefficients.setCoefficients(0.25,0.00005,0.02,0);
         FollowerConstants.useSecondaryTranslationalPID = false;
@@ -38,7 +38,7 @@ public class FConstants {
         FollowerConstants.useSecondaryDrivePID = false;
         FollowerConstants.secondaryDrivePIDFCoefficients.setCoefficients(0.1,0,0,0.6,0); // Not being used, @see useSecondaryDrivePID
 
-        FollowerConstants.zeroPowerAccelerationMultiplier = 1.5;
+        FollowerConstants.zeroPowerAccelerationMultiplier = 0.8;
         FollowerConstants.centripetalScaling = 0.000625;
 
         FollowerConstants.pathEndTimeoutConstraint = 500;
