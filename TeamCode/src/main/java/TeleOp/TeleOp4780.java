@@ -75,7 +75,7 @@ public class TeleOp4780 extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-//            robot.scoring.sweeper.setPosition(0.0);
+            robot.scoring.sweeper.setPosition(0.0);
 
             if (gamepad1.a) {
                 robot.scoring.sweeper.setPosition(0.75);
@@ -273,84 +273,81 @@ public class TeleOp4780 extends LinearOpMode {
 //            telemetry.addData("Position", "%d", currentVerticalSlidePosition);
 //
 //            telemetry.addLine("\n");
-//
-//
-//            // Outtake System Control
-//            boolean currentXButtonState = gamepad1.x;
-//            if (currentXButtonState && !lastXButtonState) {
-//                if (robot.scoring.clawStatus.getPosition() == 1.0) {
-//                    robot.scoring.clawStatus.setPosition(0.25); // Open
-//                } else {
-//                    robot.scoring.clawStatus.setPosition(1.0); // Close
-//                }
-//            }
-//            lastXButtonState = currentXButtonState;
-//
-//            boolean currentAButtonState = gamepad1.a;
-//            if (currentAButtonState && !lastAButtonState) {
-//                switch (outtakeState) {
-//                    case BASE:
-//                        outtakeState = OuttakeState.SCORING;
-//                        break;
-//
-//                    case COLLECTION:
-//                        outtakeState = OuttakeState.SCORING;
-//                        break;
-//
-//                    case SCORING:
-//                        outtakeState = OuttakeState.COLLECTION;
-//                        break;
-//                }
-//            }
-//            lastAButtonState = currentAButtonState;
-//
-//            boolean currentBButtonState = gamepad1.b;
-//            if (currentBButtonState && !lastBButtonState) {
-//                switch (outtakeState) {
-//                    case BASE:
-//                        outtakeState = OuttakeState.COLLECTION;
-//                        break;
-//
-//                    case COLLECTION:
-//                        outtakeState = OuttakeState.BASE;
-//                        break;
-//
-//                    case SCORING:
-//                        outtakeState = OuttakeState.BASE;
-//                        break;
-//                }
-//            }
-//            lastBButtonState = currentBButtonState;
-//
-//            switch (outtakeState) {
-//                case BASE:
-//                    robot.scoring.outtakeArmRotation.setPosition(0.0);
-//                    robot.scoring.clawPrimaryPivot.setPosition(0.0);
-//
-//                    break;
-//
-//                case COLLECTION: // Default
-//                    robot.scoring.outtakeArmRotation.setPosition(0.15);
-//                    robot.scoring.clawPrimaryPivot.setPosition(0.45);
-//
-//                    break;
-//
-//                case SCORING:
-//                    robot.scoring.outtakeArmRotation.setPosition(1.00);
-//                    robot.scoring.clawPrimaryPivot.setPosition(0.90);
-//
-//                    break;
-//            }
-//
-//            telemetry.addLine("----- Outtake System Status -----");
-//            telemetry.addData("Current Case", outtakeState);
-//            telemetry.addData("Arm Rotation Position", "%.2f", robot.scoring.outtakeArmRotation.getPosition());
-//            telemetry.addData("Primary Pivot Position", "%.2f", robot.scoring.clawPrimaryPivot.getPosition());
-//
-//            double clawPosition = robot.scoring.clawStatus.getPosition();
-//            String clawStatus = clawPosition == 0.25 ? "Open" : clawPosition == 1.0 ? "Closed" : "Partially Open";
-//            telemetry.addData("Claw Status", clawStatus);
-//            telemetry.addData("Claw Position", "%.2f", clawPosition);
+
+
+            // Outtake System Control
+            boolean currentXButtonState = gamepad1.x;
+            if (currentXButtonState && !lastXButtonState) {
+                if (robot.scoring.clawStatus.getPosition() == 0.675) {
+                    robot.scoring.clawStatus.setPosition(0.425); // Open
+                } else {
+                    robot.scoring.clawStatus.setPosition(0.675); // Close
+                }
+            }
+            lastXButtonState = currentXButtonState;
+
+            boolean currentAButtonState = gamepad1.a;
+            if (currentAButtonState && !lastAButtonState) {
+                switch (outtakeState) {
+                    case BASE:
+                        outtakeState = OuttakeState.SCORING;
+                        break;
+
+                    case COLLECTION:
+                        outtakeState = OuttakeState.SCORING;
+                        break;
+
+                    case SCORING:
+                        outtakeState = OuttakeState.COLLECTION;
+                        break;
+                }
+            }
+            lastAButtonState = currentAButtonState;
+
+            boolean currentBButtonState = gamepad1.b;
+            if (currentBButtonState && !lastBButtonState) {
+                switch (outtakeState) {
+                    case BASE:
+                        outtakeState = OuttakeState.COLLECTION;
+                        break;
+
+                    case COLLECTION:
+                        outtakeState = OuttakeState.BASE;
+                        break;
+
+                    case SCORING:
+                        outtakeState = OuttakeState.BASE;
+                        break;
+                }
+            }
+            lastBButtonState = currentBButtonState;
+
+            switch (outtakeState) {
+                case BASE:
+                    robot.scoring.clawPrimaryPivot.setPosition(0.00);
+                    robot.scoring.clawSecondaryPivot.setPosition(0.00);
+                    break;
+
+                case COLLECTION: // Default
+                    robot.scoring.clawPrimaryPivot.setPosition(0.00);
+                    robot.scoring.clawSecondaryPivot.setPosition(0.00);
+                    break;
+
+                case SCORING:
+                    robot.scoring.clawPrimaryPivot.setPosition(1.00);
+                    robot.scoring.clawSecondaryPivot.setPosition(1.00);
+                    break;
+            }
+
+            telemetry.addLine("----- Outtake System Status -----");
+            telemetry.addData("Current Case", outtakeState);
+            telemetry.addData("Primary Pivot Position", "%.2f", robot.scoring.clawPrimaryPivot.getPosition());
+            telemetry.addData("Secondary Pivot Position", "%.2f", robot.scoring.clawSecondaryPivot.getPosition());
+
+            double clawPosition = robot.scoring.clawStatus.getPosition();
+            String clawStatus = clawPosition <= 0.425 ? "Open" : clawPosition > 0.425 ? "Closed" : "Partially Open";
+            telemetry.addData("Claw Status", clawStatus);
+            telemetry.addData("Claw Position", "%.2f", clawPosition);
 //
 //            telemetry.addLine("\n");
 

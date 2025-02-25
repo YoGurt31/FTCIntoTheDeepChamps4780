@@ -30,17 +30,18 @@ public class FiveSpecAuto extends OpMode {
 
     /* ------- Define Robot Poses ------- */
     private final Pose startPose = new Pose(7, 72, Math.toRadians(0));  // Start Position
-    private final Pose initalScorePose = new Pose(24, 78, Math.toRadians(0));
-    private final Pose scorePose1 = new Pose(24, 75, Math.toRadians(0));
-    private final Pose scorePose2 = new Pose(24, 72, Math.toRadians(0));
-    private final Pose scorePose3 = new Pose(24, 69, Math.toRadians(0));
-    private final Pose scorePose4 = new Pose(24, 66, Math.toRadians(0));
-    private final Pose collectPose = new Pose(6, 32, Math.toRadians(0));
+    private final Pose initalScorePose = new Pose(24, 72, Math.toRadians(0));
+    private final Pose scorePose1 = new Pose(24, 78, Math.toRadians(0));
+    private final Pose scorePose2 = new Pose(24, 76, Math.toRadians(0));
+    private final Pose scorePose3 = new Pose(24, 74, Math.toRadians(0));
+    private final Pose scorePose4 = new Pose(24, 72, Math.toRadians(0));
+    private final Pose scorePose5 = new Pose(24, 70, Math.toRadians(0));
+    private final Pose collectPose = new Pose(7, 32, Math.toRadians(0));
     private final Pose parkPose = new Pose(12, 24, Math.toRadians(0));  // Parking Position
 
     /* ------- Define Paths and PathChains ------- */
     private Path scorePreload, park;
-    private PathChain collectSamples, scoreSpecimen1, scoreSpecimen2, scoreSpecimen3, scoreSpecimen4;
+    private PathChain collectSamples, scoreSpecimen1, scoreSpecimen2, scoreSpecimen3, scoreSpecimen4, scoreSpecimen5;
 
     public void buildPaths() {
         /* -------- Score Preload Path -------- */
@@ -49,20 +50,20 @@ public class FiveSpecAuto extends OpMode {
 
         /* -------- Collect Samples PathChain -------- */
         collectSamples = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(24.000, 72.000, Point.CARTESIAN), new Point(22.000, 48.000, Point.CARTESIAN), new Point(42.000, 40.000, Point.CARTESIAN)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(130))
+                .addPath(new BezierCurve(new Point(initalScorePose), new Point(22.000, 48.000, Point.CARTESIAN), new Point(42.000, 40.000, Point.CARTESIAN)))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(150))
                 .addPath(new BezierLine(new Point(42.000, 40.000, Point.CARTESIAN), new Point(30.000, 40.000, Point.CARTESIAN)))
-                .setLinearHeadingInterpolation(Math.toRadians(130), Math.toRadians(60))
+                .setLinearHeadingInterpolation(Math.toRadians(150), Math.toRadians(80))
                 .addPath(new BezierLine(new Point(30.000, 40.000, Point.CARTESIAN), new Point(42.000, 30.000, Point.CARTESIAN)))
-                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(130))
+                .setLinearHeadingInterpolation(Math.toRadians(80), Math.toRadians(150))
                 .addPath(new BezierLine(new Point(42.000, 30.000, Point.CARTESIAN), new Point(30.000, 30.000, Point.CARTESIAN)))
-                .setLinearHeadingInterpolation(Math.toRadians(130), Math.toRadians(60))
+                .setLinearHeadingInterpolation(Math.toRadians(150), Math.toRadians(80))
                 .addPath(new BezierLine(new Point(30.000, 30.000, Point.CARTESIAN), new Point(42.000, 22.000, Point.CARTESIAN)))
-                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(130))
+                .setLinearHeadingInterpolation(Math.toRadians(80), Math.toRadians(150))
                 .addPath(new BezierLine(new Point(42.000, 22.000, Point.CARTESIAN), new Point(30.000, 22.000, Point.CARTESIAN)))
-                .setLinearHeadingInterpolation(Math.toRadians(130), Math.toRadians(60))
+                .setLinearHeadingInterpolation(Math.toRadians(150), Math.toRadians(80))
                 .addPath(new BezierCurve(new Point(30.000, 22.000, Point.CARTESIAN), new Point(30.000, 32.000, Point.CARTESIAN), new Point(collectPose)))
-                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(80), Math.toRadians(0))
                 .build();
 
         /* -------- Score Specimens Path -------- */
@@ -94,14 +95,18 @@ public class FiveSpecAuto extends OpMode {
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
+        scoreSpecimen5 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(collectPose), new Point(scorePose5)))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierCurve(new Point(scorePose5), new Point(collectPose)))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .build();
+
         /* -------- Park Path -------- */
         park = new Path(new BezierLine(new Point(collectPose), new Point(parkPose)));
         park.setConstantHeadingInterpolation(Math.toRadians(0));
     }
 
-    /**
-     * Updates the autonomous sequence based on `pathState`
-     */
     private void autonomousPathUpdate() {
         switch (pathState) {
             case 0: // Score Preloaded Specimen
@@ -144,7 +149,14 @@ public class FiveSpecAuto extends OpMode {
                 }
                 break;
 
-            case 6: // Park
+            case 6: // Score Specimens
+                if (!follower.isBusy()) {
+                    follower.followPath(scoreSpecimen5);
+                    setPathState(7);
+                }
+                break;
+
+            case 7: // Park
                 if (!follower.isBusy()) {
                     follower.followPath(park);
                     setPathState(-1);
@@ -153,17 +165,11 @@ public class FiveSpecAuto extends OpMode {
         }
     }
 
-    /**
-     * Updates the state machine
-     */
     public void setPathState(int state) {
         pathState = state;
         pathTimer.resetTimer();
     }
 
-    /**
-     * Runs repeatedly during the OpMode
-     */
     @Override
     public void loop() {
         follower.update();
@@ -176,9 +182,6 @@ public class FiveSpecAuto extends OpMode {
         telemetry.update();
     }
 
-    /**
-     * Runs once when the OpMode initializes
-     */
     @Override
     public void init() {
         pathTimer = new Timer();
@@ -191,25 +194,16 @@ public class FiveSpecAuto extends OpMode {
         buildPaths();
     }
 
-    /**
-     * Runs continuously after `init()` but before `start()`
-     */
     @Override
     public void init_loop() {
     }
 
-    /**
-     * Runs once when the OpMode starts
-     */
     @Override
     public void start() {
         opmodeTimer.resetTimer();
         setPathState(0);
     }
 
-    /**
-     * Runs once when the OpMode stops
-     */
     @Override
     public void stop() {
     }
