@@ -46,7 +46,7 @@ public class TeleOp4780 extends LinearOpMode {
 
     enum IntakeState {
         IDLE,
-        OUTTAKING
+        ACTIVE
     }
 
     enum OuttakeState {
@@ -75,13 +75,12 @@ public class TeleOp4780 extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            robot.scoring.sweeper.setPosition(0.0);
-
-            if (gamepad1.a) {
-                robot.scoring.sweeper.setPosition(0.75);
+            if (gamepad1.y) {
+                robot.scoring.sweeper.setPosition(0.85);
             } else {
-                robot.scoring.sweeper.setPosition(0.05);
+                robot.scoring.sweeper.setPosition(0.0);
             }
+            telemetry.addData("Sweeper Position", robot.scoring.sweeper.getPosition());
 
             robot.driveTrain.runDriveTrainEncoders();
             robot.scoring.runScoringEncoders();
@@ -143,23 +142,24 @@ public class TeleOp4780 extends LinearOpMode {
 //            telemetry.addLine("\n");
 //
 //
-//            // Intake Roller Control
-//            int Red = robot.scoring.colorSensor.red();
-//            int Green = robot.scoring.colorSensor.green();
-//            int Blue = robot.scoring.colorSensor.blue();
-//
-//            boolean isYellow = Red > 200 && Green > 300 && Blue < 200;
-//            boolean isRed = Red > 250 && Green < 225 && Blue < 125;
-//            boolean isBlue = Red < 125 && Green < 225 && Blue > 250;
-//
-//            boolean manualForward = gamepad1.right_bumper;
-//            boolean manualReverse = gamepad1.left_bumper;
-//
-//            if (manualForward) {
-//                robot.scoring.intakePivot.setPosition(intakeLoweredPosition);
-//            } else {
-//                robot.scoring.intakePivot.setPosition(intakeLiftedPosition);
-//            }
+            // Intake Roller Control
+            int Red = robot.scoring.colorSensor.red();
+            int Green = robot.scoring.colorSensor.green();
+            int Blue = robot.scoring.colorSensor.blue();
+
+            boolean isYellow = Red > 200 && Green > 200 && Blue > 200;
+            boolean isRed = Red > 200 && Green < 400 && Blue < 200;
+            boolean isBlue = Red < 200 && Green < 400 && Blue > 200;
+            boolean isIgnored = (Red > 45 && Red < 65) && (Green > 100 && Green < 120) && (Blue > 100 && Blue < 120);
+
+            boolean manualForward = gamepad1.right_bumper;
+            boolean manualReverse = gamepad1.left_bumper;
+
+            if (manualForward) {
+                robot.scoring.intakePivot.setPosition(intakeLoweredPosition);
+            } else {
+                robot.scoring.intakePivot.setPosition(intakeLiftedPosition);
+            }
 //
 //            if (isYellow) {
 //                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
@@ -171,70 +171,71 @@ public class TeleOp4780 extends LinearOpMode {
 //                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
 //            }
 //
-//            // Auto Color Control (BLUE)
-//            if (!manualForward && !manualReverse) {
-//                switch (intakeState) {
-//                    case IDLE:
-//                        if (isRed) {
-//                            intakeState = IntakeState.OUTTAKING;
-//                            intakeTimer.reset();
-//                        }
-//
-//                        robot.scoring.intakeRollers.setPower(0);
-//
-//                        break;
-//
-//                    case OUTTAKING:
-//                        robot.scoring.intakeRollers.setDirection(DcMotorSimple.Direction.REVERSE);
-//                        robot.scoring.intakeRollers.setPower(1);
-//
-//                        if (intakeTimer.seconds() >= 2.5 && !isRed) {
-//                            intakeState = IntakeState.IDLE;
-//                            robot.scoring.intakeRollers.setPower(0);
-//                        }
-//
-//                        break;
-//                }
-//            } else {
-//                if (manualForward) {
-//                    robot.scoring.intakeRollers.setDirection(DcMotorSimple.Direction.FORWARD);
-//                    robot.scoring.intakeRollers.setPower(1);
-//                } else if (manualReverse) {
-//                    robot.scoring.intakeRollers.setDirection(DcMotorSimple.Direction.REVERSE);
-//                    robot.scoring.intakeRollers.setPower(1);
-//                } else {
-//                    robot.scoring.intakeRollers.setPower(0);
-//                }
-//            }
-//
-//            String rollerStatus = "Stopped";
-//            if (robot.scoring.intakeRollers.getPower() > 0) {
-//                if (robot.scoring.intakeRollers.getDirection() == DcMotorSimple.Direction.FORWARD) {
-//                    rollerStatus = "Intaking";
-//                } else if (robot.scoring.intakeRollers.getDirection() == DcMotorSimple.Direction.REVERSE) {
-//                    rollerStatus = "Outtaking";
-//                }
-//            } else {
-//                rollerStatus = "Stopped";
-//            }
-//
-//            telemetry.addLine("----- Roller Info -----");
-//            telemetry.addData("Intake Roller Status", rollerStatus);
-//            telemetry.addData("Servo Position", robot.scoring.intakePivot.getPosition());
-//            telemetry.addData("Current State", intakeState);
-//
-//            telemetry.addLine("\n");
-//
-//            telemetry.addLine("----- Color Sensor Info -----");
-//            telemetry.addData("Red: ", Red);
-//            telemetry.addData("Green: ", Green);
-//            telemetry.addData("Blue: ", Blue);
-//            telemetry.addLine();
-//            telemetry.addData("Is Yellow: ", isYellow);
-//            telemetry.addData("Is Blue: ", isBlue);
-//            telemetry.addData("Is Red: ", isRed);
-//
-//            telemetry.addLine("\n");
+            // Auto Color Control (BLUE)
+            if (!manualForward && !manualReverse) {
+                switch (intakeState) {
+                    case IDLE:
+                        if (isRed) {
+                            intakeState = IntakeState.ACTIVE;
+                            intakeTimer.reset();
+                        }
+
+                        robot.scoring.intakeRollers.setPower(0);
+
+                        break;
+
+                    case ACTIVE:
+                        robot.scoring.intakeRollers.setDirection(DcMotorSimple.Direction.FORWARD);
+                        robot.scoring.intakeRollers.setPower(1);
+
+                        if (isYellow || isBlue || isIgnored) {
+                            intakeState = IntakeState.IDLE;
+                            robot.scoring.intakeRollers.setPower(0);
+                        }
+
+                        break;
+                }
+            } else {
+                if (manualForward) {
+                    robot.scoring.intakeRollers.setDirection(DcMotorSimple.Direction.FORWARD);
+                    robot.scoring.intakeRollers.setPower(1);
+                } else if (manualReverse) {
+                    robot.scoring.intakeRollers.setDirection(DcMotorSimple.Direction.REVERSE);
+                    robot.scoring.intakeRollers.setPower(1);
+                } else {
+                    robot.scoring.intakeRollers.setPower(0);
+                }
+            }
+
+            String rollerStatus = "Stopped";
+            if (robot.scoring.intakeRollers.getPower() > 0) {
+                if (robot.scoring.intakeRollers.getDirection() == DcMotorSimple.Direction.FORWARD) {
+                    rollerStatus = "Intaking";
+                } else if (robot.scoring.intakeRollers.getDirection() == DcMotorSimple.Direction.REVERSE) {
+                    rollerStatus = "Outtaking";
+                }
+            } else {
+                rollerStatus = "Stopped";
+            }
+
+            telemetry.addLine("----- Roller Info -----");
+            telemetry.addData("Intake Roller Status", rollerStatus);
+            telemetry.addData("Servo Position", robot.scoring.intakePivot.getPosition());
+            telemetry.addData("Current State", intakeState);
+
+            telemetry.addLine("\n");
+
+            telemetry.addLine("----- Color Sensor Info -----");
+            telemetry.addData("Red: ", Red);
+            telemetry.addData("Green: ", Green);
+            telemetry.addData("Blue: ", Blue);
+            telemetry.addLine();
+            telemetry.addData("Is Yellow: ", isYellow);
+            telemetry.addData("Is Blue: ", isBlue);
+            telemetry.addData("Is Red: ", isRed);
+            telemetry.addData("Is Ignored: ", isIgnored);
+
+            telemetry.addLine("\n");
 //
 //
 //            // Vertical Slide Extension Control
