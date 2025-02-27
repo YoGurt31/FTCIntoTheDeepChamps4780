@@ -128,7 +128,7 @@ public class Robot {
 
             verticalSlide2 = hwMap.dcMotor.get("verticalSlide2");    // Config 2
             verticalSlide2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            verticalSlide2.setDirection(DcMotorSimple.Direction.REVERSE);
+            verticalSlide2.setDirection(DcMotorSimple.Direction.FORWARD);
             verticalSlide2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
             intakeRollers = hwMap.dcMotor.get("intakeRollers");      // Config 3

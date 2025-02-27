@@ -2,6 +2,10 @@
 
 package TeleOp;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierLine;
@@ -38,11 +42,19 @@ public class TeleOp4780 extends LinearOpMode {
 
     IntakeState intakeState = IntakeState.IDLE;
     OuttakeState outtakeState = OuttakeState.COLLECTION;
-    ElapsedTime intakeTimer = new ElapsedTime();
+
+    private boolean hasMoved = false;
+    private VerticalSlideAction verticalSlideAction = null;
 
     private boolean lastAButtonState = false;
     private boolean lastBButtonState = false;
     private boolean lastXButtonState = false;
+
+    //            boolean currentBButtonState = gamepad1.b;
+//            if (currentBButtonState && !lastBButtonState) {
+//
+//            }
+//            lastBButtonState = currentBButtonState;
 
     enum IntakeState {
         IDLE,
@@ -50,7 +62,6 @@ public class TeleOp4780 extends LinearOpMode {
     }
 
     enum OuttakeState {
-        BASE,
         COLLECTION,
         SCORING
     }
@@ -75,12 +86,7 @@ public class TeleOp4780 extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            if (gamepad1.y) {
-                robot.scoring.sweeper.setPosition(0.85);
-            } else {
-                robot.scoring.sweeper.setPosition(0.0);
-            }
-            telemetry.addData("Sweeper Position", robot.scoring.sweeper.getPosition());
+            robot.scoring.sweeper.setPosition(0.0); // (0.85) = Down
 
             robot.driveTrain.runDriveTrainEncoders();
             robot.scoring.runScoringEncoders();
@@ -91,6 +97,7 @@ public class TeleOp4780 extends LinearOpMode {
             double turn = -gamepad1.right_stick_x;
 
             follower.setTeleOpMovementVectors(drive, strafe, turn, true);
+
 
             if (strafe == 0 && drive == 0) {
                 robot.driveTrain.brake();
@@ -160,24 +167,23 @@ public class TeleOp4780 extends LinearOpMode {
             } else {
                 robot.scoring.intakePivot.setPosition(intakeLiftedPosition);
             }
-//
-//            if (isYellow) {
-//                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
-//            } else if (isRed) {
-//                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
-//            } else if (isBlue) {
-//                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
-//            } else {
-//                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
-//            }
-//
+
+            if (isYellow) {
+                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
+            } else if (isRed) {
+                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+            } else if (isBlue) {
+                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+            } else {
+                robot.scoring.LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+            }
+
             // Auto Color Control (BLUE)
             if (!manualForward && !manualReverse) {
                 switch (intakeState) {
                     case IDLE:
                         if (isRed) {
                             intakeState = IntakeState.ACTIVE;
-                            intakeTimer.reset();
                         }
 
                         robot.scoring.intakeRollers.setPower(0);
@@ -236,107 +242,110 @@ public class TeleOp4780 extends LinearOpMode {
             telemetry.addData("Is Ignored: ", isIgnored);
 
             telemetry.addLine("\n");
-//
-//
-//            // Vertical Slide Extension Control
-//            double verticalSlideExtensionPower = gamepad1.left_trigger - gamepad1.right_trigger;
-//            int currentVerticalSlidePosition = (robot.scoring.verticalSlideExtension1.getCurrentPosition() + robot.scoring.verticalSlideExtension2.getCurrentPosition()) / 2;
-//            int verticalSlideExtensionMin = -75;  // Min Value
-//            int verticalToleranceThreshold = 25;  // Threshold Value (Adjust)
-//            double slowFactor = 0.75;
-//
-//            final double HOLD = 0.0005;
-//            boolean Holding = false;
-//
-//            if (currentVerticalSlidePosition > 200 && robot.scoring.verticalSlideExtension1.getCurrentPosition() < 1600 && robot.scoring.verticalSlideExtension2.getCurrentPosition() < 1600 && verticalSlideExtensionPower == 0) {
-//                robot.scoring.verticalSlideExtension1.setPower(HOLD);
-//                robot.scoring.verticalSlideExtension2.setPower(HOLD);
-//                Holding = true;
-//            } else if (verticalSlideExtensionPower != 0 && currentVerticalSlidePosition > verticalSlideExtensionMin) {
-//                if (currentVerticalSlidePosition <= verticalToleranceThreshold) {
-//                    double adjustedPower = verticalSlideExtensionPower * slowFactor;
-//                    robot.scoring.verticalSlideExtension1.setPower(adjustedPower);
-//                    robot.scoring.verticalSlideExtension2.setPower(adjustedPower);
-//                } else {
-//                    robot.scoring.verticalSlideExtension1.setPower(verticalSlideExtensionPower);
-//                    robot.scoring.verticalSlideExtension2.setPower(verticalSlideExtensionPower);
-//                }
-//            } else {
-//                robot.scoring.verticalSlideExtension1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//                robot.scoring.verticalSlideExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//                robot.scoring.verticalSlideExtension1.setPower(0);
-//                robot.scoring.verticalSlideExtension2.setPower(0);
-//            }
-//
-//            telemetry.addLine("----- Vertical Slide Extension -----");
-//            telemetry.addData("Power", "%.2f", verticalSlideExtensionPower);
-//            telemetry.addData("HOLD Power", Holding ? String.format("%.4f", HOLD) : "Not Holding");
-//            telemetry.addData("Position", "%d", currentVerticalSlidePosition);
-//
-//            telemetry.addLine("\n");
 
 
-            // Outtake System Control
+            // Vertical Slide Extension Control
+            double verticalSlideExtensionPower = gamepad1.left_trigger - gamepad1.right_trigger;
+            int currentVerticalSlidePosition = (robot.scoring.verticalSlide1.getCurrentPosition() + robot.scoring.verticalSlide2.getCurrentPosition()) / 2;
+            int verticalSlideExtensionMin = -75;  // Min Value
+            int verticalToleranceThreshold = 25;  // Threshold Value (Adjust)
+            double slowFactor = 0.75;
+
+            final double HOLD = 0.0005;
+            boolean Holding = false;
+
+            if (currentVerticalSlidePosition > 150 && robot.scoring.verticalSlide1.getCurrentPosition() < 900 && robot.scoring.verticalSlide2.getCurrentPosition() < 900 && verticalSlideExtensionPower == 0) {
+                robot.scoring.verticalSlide1.setPower(HOLD);
+                robot.scoring.verticalSlide2.setPower(HOLD);
+                Holding = true;
+            } else if (verticalSlideExtensionPower != 0 && currentVerticalSlidePosition > verticalSlideExtensionMin) {
+                if (currentVerticalSlidePosition <= verticalToleranceThreshold) {
+                    double adjustedPower = verticalSlideExtensionPower * slowFactor;
+                    robot.scoring.verticalSlide1.setPower(adjustedPower);
+                    robot.scoring.verticalSlide2.setPower(adjustedPower);
+                } else {
+                    robot.scoring.verticalSlide1.setPower(verticalSlideExtensionPower);
+                    robot.scoring.verticalSlide2.setPower(verticalSlideExtensionPower);
+                }
+            } else {
+                robot.scoring.verticalSlide1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.scoring.verticalSlide2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.scoring.verticalSlide1.setPower(0);
+                robot.scoring.verticalSlide2.setPower(0);
+            }
+
+            telemetry.addLine("----- Diagonal Slide Extension -----");
+            telemetry.addData("Power", "%.2f", verticalSlideExtensionPower);
+            telemetry.addData("HOLD Power", Holding ? String.format("%.4f", HOLD) : "Not Holding");
+            telemetry.addData("Position", "%d", currentVerticalSlidePosition);
+
+            telemetry.addLine("\n");
+
+
+            // Claw Control
             boolean currentXButtonState = gamepad1.x;
             if (currentXButtonState && !lastXButtonState) {
-                if (robot.scoring.clawStatus.getPosition() == 0.675) {
+                if (robot.scoring.clawStatus.getPosition() == 0.60) {
                     robot.scoring.clawStatus.setPosition(0.425); // Open
                 } else {
-                    robot.scoring.clawStatus.setPosition(0.675); // Close
+                    robot.scoring.clawStatus.setPosition(0.60); // Close
                 }
             }
             lastXButtonState = currentXButtonState;
 
+
+            // Outtake System Control
             boolean currentAButtonState = gamepad1.a;
             if (currentAButtonState && !lastAButtonState) {
                 switch (outtakeState) {
-                    case BASE:
-                        outtakeState = OuttakeState.SCORING;
-                        break;
-
                     case COLLECTION:
                         outtakeState = OuttakeState.SCORING;
+                        hasMoved = false;
                         break;
 
                     case SCORING:
                         outtakeState = OuttakeState.COLLECTION;
+                        hasMoved = false;
                         break;
                 }
             }
             lastAButtonState = currentAButtonState;
 
-            boolean currentBButtonState = gamepad1.b;
-            if (currentBButtonState && !lastBButtonState) {
-                switch (outtakeState) {
-                    case BASE:
-                        outtakeState = OuttakeState.COLLECTION;
-                        break;
-
-                    case COLLECTION:
-                        outtakeState = OuttakeState.BASE;
-                        break;
-
-                    case SCORING:
-                        outtakeState = OuttakeState.BASE;
-                        break;
-                }
-            }
-            lastBButtonState = currentBButtonState;
-
             switch (outtakeState) {
-                case BASE:
-                    robot.scoring.clawPrimaryPivot.setPosition(0.00);
-                    robot.scoring.clawSecondaryPivot.setPosition(0.00);
-                    break;
-
                 case COLLECTION: // Default
                     robot.scoring.clawPrimaryPivot.setPosition(0.00);
-                    robot.scoring.clawSecondaryPivot.setPosition(0.00);
+                    robot.scoring.clawSecondaryPivot.setPosition(0.1);
+                    robot.scoring.clawStatus.setPosition(0.425);
+
+                    if (!hasMoved) {
+                        verticalSlideAction = new VerticalSlideAction(15);
+                        hasMoved = true;
+                    }
+
+                    if (verticalSlideAction != null && !verticalSlideAction.run(new TelemetryPacket())) {
+
+                    } else {
+                        verticalSlideAction = null;
+                    }
+
                     break;
 
                 case SCORING:
                     robot.scoring.clawPrimaryPivot.setPosition(1.00);
                     robot.scoring.clawSecondaryPivot.setPosition(1.00);
+                    robot.scoring.clawStatus.setPosition(0.60);
+
+                    if (!hasMoved) {
+                        verticalSlideAction = new VerticalSlideAction(800);
+                        hasMoved = true;
+                    }
+
+                    if (verticalSlideAction != null && !verticalSlideAction.run(new TelemetryPacket())) {
+
+                    } else {
+                        verticalSlideAction = null;
+                    }
+
                     break;
             }
 
@@ -349,10 +358,69 @@ public class TeleOp4780 extends LinearOpMode {
             String clawStatus = clawPosition <= 0.425 ? "Open" : clawPosition > 0.425 ? "Closed" : "Partially Open";
             telemetry.addData("Claw Status", clawStatus);
             telemetry.addData("Claw Position", "%.2f", clawPosition);
-//
-//            telemetry.addLine("\n");
+
+            telemetry.addLine("\n");
 
             telemetry.update();
+        }
+    }
+
+    public class VerticalSlideAction implements Action {
+        private final int targetPosition;
+        private boolean isStarted = false;
+
+        // Decent Values
+        private final double kP = 0.0200000000;
+        private final double kI = 0.0000000100;
+        private final double kD = 0.0000275000;
+
+        private final int tolerance = 25;
+        private final double HOLD = 0;
+
+        private double integralSum = 0;
+        private int lastError = 0;
+        private long lastTime = System.nanoTime();
+
+        public VerticalSlideAction(int position) {
+            this.targetPosition = position;
+        }
+
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            if (!isStarted) {
+                isStarted = true;
+                robot.scoring.verticalSlide1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                robot.scoring.verticalSlide2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                lastTime = System.nanoTime();
+            }
+
+            int currentPosition = (robot.scoring.verticalSlide1.getCurrentPosition() + robot.scoring.verticalSlide2.getCurrentPosition()) / 2;
+            int error = targetPosition - currentPosition;
+
+            long currentTime = System.nanoTime();
+            double deltaTime = (currentTime - lastTime) / 1e9;
+            lastTime = currentTime;
+
+            integralSum += error * deltaTime;
+
+            double errorDerivative = (error - lastError) / deltaTime;
+
+            double power = (kP * error) + (kI * integralSum) + (kD * errorDerivative);
+            power = Math.max(-1, Math.min(1, power));
+
+            robot.scoring.verticalSlide1.setPower(power);
+            robot.scoring.verticalSlide2.setPower(power);
+
+            lastError = error;
+
+            if (Math.abs(error) < tolerance) {
+                robot.scoring.verticalSlide1.setPower(HOLD);
+                robot.scoring.verticalSlide2.setPower(HOLD);
+                robot.scoring.verticalSlide1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.scoring.verticalSlide2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                return true;
+            }
+
+            return false;
         }
     }
 }
