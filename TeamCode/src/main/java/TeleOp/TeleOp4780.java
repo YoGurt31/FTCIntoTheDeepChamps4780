@@ -21,7 +21,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import Robot.Robot;
 
@@ -207,19 +206,19 @@ public class TeleOp4780 extends LinearOpMode {
                 }
             }
 
-            String rollerStatus = "Stopped";
+            String rollerState = "Stopped";
             if (robot.scoring.intakeRollers.getPower() > 0) {
                 if (robot.scoring.intakeRollers.getDirection() == DcMotorSimple.Direction.FORWARD) {
-                    rollerStatus = "Intaking";
+                    rollerState = "Intaking";
                 } else if (robot.scoring.intakeRollers.getDirection() == DcMotorSimple.Direction.REVERSE) {
-                    rollerStatus = "Outtaking";
+                    rollerState = "Outtaking";
                 }
             } else {
-                rollerStatus = "Stopped";
+                rollerState = "Stopped";
             }
 
             telemetry.addLine("----- Roller Info -----");
-            telemetry.addData("Intake Roller Status", rollerStatus);
+            telemetry.addData("Intake Roller State", rollerState);
             telemetry.addData("Servo Position", robot.scoring.intakePivot.getPosition());
             telemetry.addData("Current State", intakeState);
 
@@ -279,10 +278,10 @@ public class TeleOp4780 extends LinearOpMode {
             // Claw Control
             boolean currentXButtonState = gamepad1.x;
             if (currentXButtonState && !lastXButtonState) {
-                if (robot.scoring.clawStatus.getPosition() == 0.60) {
-                    robot.scoring.clawStatus.setPosition(0.425); // Open
+                if (robot.scoring.clawState.getPosition() == 0.60) {
+                    robot.scoring.clawState.setPosition(0.425); // Open
                 } else {
-                    robot.scoring.clawStatus.setPosition(0.60); // Close
+                    robot.scoring.clawState.setPosition(0.60); // Close
                 }
             }
             lastXButtonState = currentXButtonState;
@@ -346,9 +345,9 @@ public class TeleOp4780 extends LinearOpMode {
             telemetry.addData("Primary Pivot Position", "%.2f", robot.scoring.clawPrimaryPivot.getPosition());
             telemetry.addData("Secondary Pivot Position", "%.2f", robot.scoring.clawSecondaryPivot.getPosition());
 
-            double clawPosition = robot.scoring.clawStatus.getPosition();
-            String clawStatus = clawPosition <= 0.425 ? "Open" : clawPosition > 0.425 ? "Closed" : "Partially Open";
-            telemetry.addData("Claw Status", clawStatus);
+            double clawPosition = robot.scoring.clawState.getPosition();
+            String clawState = clawPosition <= 0.425 ? "Open" : clawPosition > 0.425 ? "Closed" : "Partially Open";
+            telemetry.addData("Claw State", clawState);
             telemetry.addData("Claw Position", "%.2f", clawPosition);
 
             telemetry.addLine("\n");
@@ -361,7 +360,7 @@ public class TeleOp4780 extends LinearOpMode {
         if (!clawActionCompleted) {
             robot.scoring.clawPrimaryPivot.setPosition(primaryPivot);
             robot.scoring.clawSecondaryPivot.setPosition(secondaryPivot);
-            robot.scoring.clawStatus.setPosition(clawPosition);
+            robot.scoring.clawState.setPosition(clawPosition);
 
             sleep(500);
             clawActionCompleted = true;

@@ -111,7 +111,7 @@ public class Robot {
     // Scoring Subsystem
     public class Scoring {
         public DcMotor horizontalSlideExtension, verticalSlide1, verticalSlide2, intakeRollers;
-        public Servo intakePivot, clawPrimaryPivot, clawSecondaryPivot, clawStatus, sweeper;
+        public Servo intakePivot, clawPrimaryPivot, clawSecondaryPivot, clawState, sweeper;
         public RevBlinkinLedDriver LED;
         public ColorSensor colorSensor;
 
@@ -144,7 +144,7 @@ public class Robot {
 
             clawSecondaryPivot = hwMap.servo.get("clawSecondaryPivot");
 
-            clawStatus = hwMap.servo.get("clawStatus");
+            clawState = hwMap.servo.get("clawState");
 
             LED = hwMap.get(RevBlinkinLedDriver.class, "LED");
             LED.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
