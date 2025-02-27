@@ -44,17 +44,11 @@ public class TeleOp4780 extends LinearOpMode {
     OuttakeState outtakeState = OuttakeState.COLLECTION;
 
     private boolean hasMoved = false;
+    private boolean clawActionCompleted = false;
     private VerticalSlideAction verticalSlideAction = null;
 
     private boolean lastAButtonState = false;
-    private boolean lastBButtonState = false;
     private boolean lastXButtonState = false;
-
-    //            boolean currentBButtonState = gamepad1.b;
-//            if (currentBButtonState && !lastBButtonState) {
-//
-//            }
-//            lastBButtonState = currentBButtonState;
 
     enum IntakeState {
         IDLE,
@@ -301,11 +295,13 @@ public class TeleOp4780 extends LinearOpMode {
                     case COLLECTION:
                         outtakeState = OuttakeState.SCORING;
                         hasMoved = false;
+                        clawActionCompleted = false;
                         break;
 
                     case SCORING:
                         outtakeState = OuttakeState.COLLECTION;
                         hasMoved = false;
+                        clawActionCompleted = false;
                         break;
                 }
             }
@@ -313,11 +309,9 @@ public class TeleOp4780 extends LinearOpMode {
 
             switch (outtakeState) {
                 case COLLECTION: // Default
-                    robot.scoring.clawPrimaryPivot.setPosition(0.00);
-                    robot.scoring.clawSecondaryPivot.setPosition(0.1);
-                    robot.scoring.clawStatus.setPosition(0.425);
+                    runClawActions(0.00, 0.075, 0.425);
 
-                    if (!hasMoved) {
+                    if (clawActionCompleted && !hasMoved) {
                         verticalSlideAction = new VerticalSlideAction(15);
                         hasMoved = true;
                     }
@@ -331,12 +325,10 @@ public class TeleOp4780 extends LinearOpMode {
                     break;
 
                 case SCORING:
-                    robot.scoring.clawPrimaryPivot.setPosition(1.00);
-                    robot.scoring.clawSecondaryPivot.setPosition(1.00);
-                    robot.scoring.clawStatus.setPosition(0.60);
+                    runClawActions(1.00, 1.00, 0.60);
 
-                    if (!hasMoved) {
-                        verticalSlideAction = new VerticalSlideAction(800);
+                    if (clawActionCompleted && !hasMoved) {
+                        verticalSlideAction = new VerticalSlideAction(850);
                         hasMoved = true;
                     }
 
@@ -365,6 +357,17 @@ public class TeleOp4780 extends LinearOpMode {
         }
     }
 
+    private void runClawActions(double primaryPivot, double secondaryPivot, double clawPosition) {
+        if (!clawActionCompleted) {
+            robot.scoring.clawPrimaryPivot.setPosition(primaryPivot);
+            robot.scoring.clawSecondaryPivot.setPosition(secondaryPivot);
+            robot.scoring.clawStatus.setPosition(clawPosition);
+
+            sleep(500);
+            clawActionCompleted = true;
+        }
+    }
+
     public class VerticalSlideAction implements Action {
         private final int targetPosition;
         private boolean isStarted = false;
@@ -372,7 +375,7 @@ public class TeleOp4780 extends LinearOpMode {
         // Decent Values
         private final double kP = 0.0200000000;
         private final double kI = 0.0000000100;
-        private final double kD = 0.0000275000;
+        private final double kD = 0.0000325000;
 
         private final int tolerance = 25;
         private final double HOLD = 0;
